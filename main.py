@@ -15,17 +15,49 @@ def find_passage(game_desc, pid):
     return {}
 
 
-
+def parselink(text, number):
+    msg = "(" + str(number) + ") " + text[2:-2]
+    if "->" in msg:
+        return msg.split("->")[0]
+    elif "<-" in msg:
+        return msg.split("<-")[1]
+    else:
+        return msg
 # ------------------------------------------------------
 
 def render(current):
-    pass
+    text = current["text"]
+    inbracket = 0
+    delimiterstart = 0
+    linknumber = 0
+    msg = ""
+    for x in range(0, len(text)):
+        msg = msg + text[x]
+        if x > 0 and text[x] == "[" and text[x-1] == "[" and not inbracket:
+            delimiterstart = len(msg) - 2
+            inbracket = True
+        if x > 0 and text[x] == "]" and text[x-1] == "]" and inbracket:
+            inbracket = False
+            linknumber += 1
+            msg = msg[:delimiterstart] + parselink(msg[delimiterstart:],linknumber)
+    print(msg)
 
 def update(current, game_desc, choice):
+    links = current["links"]
+    selection = None
+    #input validation, is int
+    try:
+        selection = int(choice)
+    except ValueError:
+        selection = None
+    #input validation; exists/nonzero, and within bounds
+    if (selection) and (selection > 0) and (selection <= len(links)):
+        dest = links[selection - 1]["pid"]
+        return find_passage(game_desc, dest)
     return current
 
 def get_input(current):
-    return current
+    return input("> ")
 
 # ------------------------------------------------------
 
